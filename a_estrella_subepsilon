@@ -1,0 +1,66 @@
+import heapq
+from nodo import Nodo
+from casilla import Casilla
+
+def a_estrella_subepsilon(camino, inicio, meta, obtener_vecinos, costo_movimiento, tipo_heuristica, epsilon):
+    """Algoritmo A*ε que relaja la restricción de optimalidad."""
+    lista_frontera = []
+    lista_interior = set()
+
+    # Nodo inicial con la heurística seleccionada
+    nodo_inicial = Nodo(inicio, None, 0, tipo_heuristica(inicio, meta))
+    heapq.heappush(lista_frontera, nodo_inicial)
+    
+    cal = 0  # Calorías (puedes ajustar este valor según la lógica)
+    f_final = -1  # Coste final, inicialmente -1
+
+    while lista_frontera:
+        # Obtener el nodo con el menor f(n) de lista_frontera para definir la lista focal
+        nodo_minimo = lista_frontera[0]  # El nodo con el menor f(n) en lista_frontera
+        min_f = nodo_minimo.f
+        lista_focal = [nodo for nodo in lista_frontera if nodo.f <= (1 + epsilon) * min_f]
+
+        # Seleccionar el nodo de lista_focal con menor valor de Hf(n) (heurística focal de gasto en calorías)
+        nodo_actual = min(lista_focal, key=lambda nodo: tipo_heuristica(nodo.getEstado(), meta))
+        lista_frontera.remove(nodo_actual)
+
+        # Si el nodo actual ya ha sido expandido, lo ignoramos
+        if nodo_actual.getEstado() in lista_interior:
+            continue
+
+        # Añadir el nodo actual a la lista interior (nodos ya explorados)
+        lista_interior.add(nodo_actual.getEstado())
+
+        # Si hemos llegado al nodo destino, reconstruir el camino
+        if nodo_actual.getEstado().getFila() == meta.getFila() and nodo_actual.getEstado().getCol() == meta.getCol():
+            camino_reconstruido = reconstruir_camino(nodo_actual)
+            
+            for casilla in camino_reconstruido:
+                fila = casilla.getFila()
+                columna = casilla.getCol()
+                camino[fila][columna] = '*'  # Marcar el camino en el mapa
+            
+            f_final = nodo_actual.f  # El coste final es el valor de 'f' del nodo meta
+            return f_final, cal  # Devolver el coste final y las calorías
+
+        # Expandir los vecinos del nodo actual
+        for vecino in obtener_vecinos(nodo_actual.getEstado()):
+            if vecino in lista_interior:
+                continue
+            
+            g_nuevo = nodo_actual.g + costo_movimiento(nodo_actual.getEstado(), vecino)
+            nodo_vecino = Nodo(vecino, nodo_actual, g_nuevo, tipo_heuristica(vecino, meta))
+
+            if nodo_vecino not in lista_frontera:
+                heapq.heappush(lista_frontera, nodo_vecino)
+
+    return -1, cal  # Devuelve -1 para el coste si no se encuentra un camino válido
+
+def reconstruir_camino(nodo):
+    """Reconstruir el camino desde el nodo final hasta el inicial."""
+    camino = []
+    while nodo is not None:
+        camino.append(nodo.getEstado())  # Agregar el estado del nodo actual
+        nodo = nodo.padre
+    return camino[::-1]  # Invertir el camino para que vaya desde el inicio al final
+
