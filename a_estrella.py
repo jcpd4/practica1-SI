@@ -6,11 +6,12 @@ from casilla import Casilla
 # Heurística de Manhattan
 def manhattan_heuristica(nodo_actual, nodo_meta):
     """Calcula la distancia Manhattan entre dos nodos (usando Casilla)."""
-    resultado = abs(nodo_actual.getFila() - nodo_meta.getFila()) + abs(nodo_actual.agetCol() - nodo_meta.getCol())
+    resultado = abs(nodo_actual.getFila() - nodo_meta.getFila()) + abs(nodo_actual.getCol() - nodo_meta.getCol())
     return resultado
 
 # Heurística trivial (siempre devuelve 0)
 def trivial_heuristica(nodo_actual, nodo_meta):
+    # ns que probar ya para que me funcione
     return 0
 
 # Heurística euclídea (distancia directa en línea recta)
@@ -22,7 +23,7 @@ def chebyshev_heuristica(nodo_actual, nodo_meta):
     return max(abs(nodo_actual.getFila() - nodo_meta.getFila()), abs(nodo_actual.getCol() - nodo_meta.getCol()))
 
 
-def a_estrella(camino, inicio, meta, obtener_vecinos, costo_movimiento, tipo_heuristica):
+def a_estrella(camino, inicio, meta, obtener_vecinos, costo_movimiento, tipo_heuristica,mapi):
     """Algoritmo A* que encuentra el camino óptimo entre 'inicio' y 'meta'."""
     lista_frontera = []
     lista_interior = set()
@@ -47,7 +48,8 @@ def a_estrella(camino, inicio, meta, obtener_vecinos, costo_movimiento, tipo_heu
         # Si hemos llegado al nodo destino, reconstruir el camino
         if nodo_actual.getEstado().getFila() == meta.getFila() and nodo_actual.getEstado().getCol() == meta.getCol():
             # Reconstruir el camino desde el nodo final al inicial
-            camino_reconstruido = reconstruir_camino(nodo_actual)
+            camino_reconstruido,cal = reconstruir_camino(nodo_actual,mapi)
+            print("LAS CALORIAS SON", cal)
             
             # Marcar el camino en el mapa cambiando '.' por '*'
             for casilla in camino_reconstruido:
@@ -62,6 +64,15 @@ def a_estrella(camino, inicio, meta, obtener_vecinos, costo_movimiento, tipo_heu
         for vecino in obtener_vecinos(nodo_actual.getEstado()):
             if vecino in lista_interior:
                 continue  # Saltar los nodos que ya fueron expandidos
+            ##tipo de terreno
+            #tipo_terreno = mapi.obtener_tipo_terreno(vecino)  # Función para verificar el tipo de terreno
+            #if tipo_terreno == "hierba":
+            #    cal += 2
+            #elif tipo_terreno == "agua":
+            #    cal += 4
+            #elif tipo_terreno == "roca":
+            #    cal += 6
+            
             
             # Calcular nuevo g (coste desde el inicio)
             g_nuevo = nodo_actual.g + costo_movimiento(nodo_actual.getEstado(), vecino)
@@ -77,10 +88,33 @@ def a_estrella(camino, inicio, meta, obtener_vecinos, costo_movimiento, tipo_heu
     return -1, cal  # Devuelve -1 para el coste si no se encuentra un camino válido
 
 
-def reconstruir_camino(nodo):
+def reconstruir_camino(nodo,mapi):
     """Reconstruir el camino desde el nodo final hasta el inicial."""
     camino = []
+    cal = 0
+    es_origen = True
     while nodo is not None:
         camino.append(nodo.getEstado())  # Agregar el estado del nodo actual
+        #Ignora el nodo de origen en el cálculo de calorías
+        if not es_origen:
+             # Obtener el tipo de terreno y calcular calorías solo para el camino final
+            tipo_terreno = mapi.obtener_tipo_terreno(nodo.getEstado())
+            if tipo_terreno == "hierba":
+                cal += 2
+            elif tipo_terreno == "agua":
+                cal += 4
+            elif tipo_terreno == "roca":
+                cal += 6
+            # Imprimir las calorías acumuladas después de cada movimiento
+            print(f"Calorías acumuladas tras mover a {tipo_terreno}: {cal}")
+        else:
+            es_origen = False
+        
+        
         nodo = nodo.padre
-    return camino[::-1]  # Invertir el camino para que vaya desde el inicio al final
+    return camino[::-1],cal  # Invertir el camino para que vaya desde el inicio al final
+
+
+
+
+
