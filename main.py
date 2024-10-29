@@ -4,6 +4,7 @@ from mapa import *
 from pygame.locals import *
 from a_estrella import *
 from heuristicas import *
+from a_estrella_subepsilon import *
 
 
 MARGEN=5
@@ -122,7 +123,10 @@ def main():
                                 print('Error: No existe un camino válido entre origen y destino')
                         else:
                             ###########################                                                   
-                            #coste, cal=llamar a A estrella subepsilon                       
+                            #coste, cal=llamar a A estrella subepsilon
+                            epsilon = 0.5  # Puedes definir el valor de epsilon según el escenario
+                            tipo_heuristica = manhattan_heuristica
+                            coste, cal = a_estrella_subepsilon(camino, origen, destino,mapi.getVecinos, mapi.costo_movimiento,tipo_heuristica, epsilon)
                             if coste==-1:
                                 print('Error: No existe un camino válido entre origen y destino')
                             
