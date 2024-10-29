@@ -118,7 +118,7 @@ def main():
                         if pulsaBoton(mapi, pos)==1:
                             ###########################
                             tipo_heuristica = seleccionar_heuristica()
-                            coste, cal= a_estrella(camino,origen, destino, mapi.getVecinos, mapi.costo_movimiento,tipo_heuristica)           
+                            coste, cal= a_estrella(camino,origen, destino, mapi.getVecinos, mapi.costo_movimiento,tipo_heuristica,mapi)           
                             if coste==-1:
                                 print('Error: No existe un camino válido entre origen y destino')
                         else:
@@ -126,7 +126,7 @@ def main():
                             #coste, cal=llamar a A estrella subepsilon
                             epsilon = 0.5  # Puedes definir el valor de epsilon según el escenario
                             tipo_heuristica = manhattan_heuristica
-                            coste, cal = a_estrella_subepsilon(camino, origen, destino,mapi.getVecinos, mapi.costo_movimiento,tipo_heuristica, epsilon)
+                            coste, cal = a_estrella_subepsilon(camino, origen, destino,mapi.getVecinos, mapi.costo_movimiento,tipo_heuristica, epsilon,mapi)
                             if coste==-1:
                                 print('Error: No existe un camino válido entre origen y destino')
                             
